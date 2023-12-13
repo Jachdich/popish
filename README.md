@@ -19,7 +19,7 @@ For best results, use your window manager or utility of choice to bind a key com
 
 ## Configuration
 
-At the top of the file is defined a list of constants. Add any constants you feel are useful (or, even better, open an issue or PR to suggest they're added by default!). The style can be changed using the QSS string found near the top of the program. TODO: add built-in and user-added themes.
+At the top of the file is defined a list of constants. Add any constants you feel are useful (or, even better, open an issue or PR to suggest they're added by default!). The style can be changed using the QSS string found near the top of the program.
 
 ## Keybinds
 
