@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import Qt, QCoreApplication
 from PyQt5.QtGui import QCursor
@@ -10,8 +11,9 @@ import random
 # import json
 # import os
 # import sys
+import pyperclip
 
-WIDTH = 50.0 # percent
+WIDTH = 50.0 # percent of the screen
 
 #constants
 Rearth = 6.4e6
@@ -30,7 +32,7 @@ U0 = 4*pi*10**-7
 Ke=1/(4*pi*E0)
 
 STYLE = """
-QWidget, QLineEdit, QLabel {
+QWidget, QLineEdit, QPlainTextEdit QLabel {
     background-color: #273238;
     color: #c1c1c1;
     font-size: 15px;
@@ -43,7 +45,7 @@ QWidget {
     border-style: solid;
 }
 
-QLineEdit {
+QLineEdit, QPlainTextEdit {
     border: none;
     border-color: #1e2529;
     border-width: 1px;
@@ -86,12 +88,29 @@ class MainWin(QtWidgets.QMainWindow):
         self.central = QtWidgets.QWidget(self)
 
         self.layout = QtWidgets.QVBoxLayout(self.central)
-        self.input_line = QtWidgets.QLineEdit(self.central)
+        self.input_line = QtWidgets.QPlainTextEdit(self.central)
         self.body_text = WrapLabel(self.central)
         self.layout.addWidget(self.input_line)
         self.layout.addWidget(self.body_text)
 
-        self.input_line.textChanged[str].connect(self.onKeyPress)
+        self.input_line.textChanged.connect(self.onTextChange)
+        self.resize_input()
+        self.input_line.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.input_line.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+        def keyPressEvent(event):
+            if event.key() == Qt.Key_C and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+                if self.input_line.textCursor().hasSelection():
+                    text = self.input_line.textCursor().selectedText()
+                else:
+                    text = self.run_code()
+                pyperclip.copy(text)
+                # subprocess.run(["xclip", "-selection", "clipboard"], input=text.encode("utf-8"))
+            else:
+                QtWidgets.QPlainTextEdit.keyPressEvent(self.input_line, event)
+            
+        
+        self.input_line.keyPressEvent = keyPressEvent
         self.central.setLayout(self.layout)
 
         self.setStyleSheet(STYLE)
@@ -110,26 +129,50 @@ class MainWin(QtWidgets.QMainWindow):
         self.setGeometry(int(sw / 2 - winwidth / 2) + geom.x(),
                          int(sh / 2 - winheight / 2) + geom.y(),
                          winwidth, winheight)
-        self.setWindowFlag(Qt.Popup)
+        self.setWindowFlag(Qt.WindowType.Tool) 
+        self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
         self.input_line.setFocus()
         self.show()
 
+    def keyPressEvent(self, event: QtGui.QKeyEvent):
+        if event.key() == Qt.Key_Escape:
+            self.closeEvent(None)
+        super().keyPressEvent(event)
     def closeEvent(self, event):
         QCoreApplication.quit()
 
-    def onKeyPress(self, text):
+    def resize_input(self):
+        rows = len(self.input_line.toPlainText().split("\n"))
+        font_metrics = QtGui.QFontMetrics(self.input_line.font())
+        doc = self.input_line.document()
+        margins = self.input_line.contentsMargins()
+        row_height  = (font_metrics.lineSpacing() + 2) * rows + (doc.documentMargin() + self.input_line.frameWidth()) * 2 + margins.top() + margins.bottom()
+        self.input_line.setFixedHeight(round(row_height))
+
+    def run_code(self):
+        text = self.input_line.toPlainText()
         try:
-            smts = text.split(";")
-            exec("\n".join([smt.strip() for smt in smts[:-1]]))
-            ret = str(eval(smts[-1]))
+            smts = text.split("\n")
+            # exec("\n".join([smt.strip() for smt in smts[:-1]]))
+            globs = globals().copy()
+            locs = locals().copy()
+            exec("\n".join(smts[:-1]), globs, locs)
+            # weird hack to make list comprehensions work: make locals global
+            globs = {**locs, **globs}
+            ret = str(eval(smts[-1], globs))
         except Exception as e:
             ret = str(e)
+        return ret
 
+    def onTextChange(self):
+        ret = self.run_code()
         self.body_text.setText(ret)
-
+        
+        self.resize_input()
         font_metrics = QtGui.QFontMetrics(self.body_text.font())
         text_size = font_metrics.size(0, "a")
         self.setFixedSize(self.winwidth, max(self.winheight, int((len(ret) * text_size.width()) // self.winwidth * text_size.height() + self.layout.sizeHint().height())))
 
-w = MainWin()
-app.exec_()
+if __name__ == "__main__":
+    w = MainWin()
+    app.exec_()
