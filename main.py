@@ -100,6 +100,13 @@ class MainWin(QtWidgets.QMainWindow):
                     text = self.run_code()
                 pyperclip.copy(text)
                 # subprocess.run(["xclip", "-selection", "clipboard"], input=text.encode("utf-8"))
+            if event.key() == Qt.Key_S and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+                # save
+                name, extension = QtWidgets.QFileDialog.getSaveFileName(filter="Python scripts (*.py)")
+                if not name.endswith(".py"):
+                    name += ".py"
+                with open(name, "w") as f:
+                    f.write(self.input_line.toPlainText())
             else:
                 QtWidgets.QPlainTextEdit.keyPressEvent(self.input_line, event)
             
@@ -132,7 +139,7 @@ class MainWin(QtWidgets.QMainWindow):
         if event.key() == Qt.Key_Escape:
             self.closeEvent(None)
         super().keyPressEvent(event)
-    def closeEvent(self, event):
+    def closeEvent(self, event: QtGui.QCloseEvent):
         QCoreApplication.quit()
 
     def resize_input(self):
