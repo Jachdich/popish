@@ -5,6 +5,12 @@ from PyQt5.QtGui import QCursor
 app = QtWidgets.QApplication([])
 import math
 from math import *
+import random
+# import numpy as np
+# import time
+# import json
+# import os
+# import sys
 import pyperclip
 
 WIDTH = 50.0 # percent of the screen
