@@ -17,6 +17,9 @@ Run `pip install -r requirements.txt` to automatically install.
 
 For best results, use your window manager or utility of choice to bind a key combination to run the script. When run, you can type in the text box and the result of the expression will be displayed below in real time. Only the result of the very last line is displayed. The previous lines are run as statements, so you can put variable assignments etc. on previous lines just like you would in a normal program. Currently, more complex constructs involving indented blocks are not supported, however this is being worked on.
 
+![Calculating energy](img/sc1.png)
+![Listing the numbers 0-16 in binary](img/sc2.png)
+
 ## Configuration
 
 At the top of the file is defined a list of constants. Add any constants you feel are useful (or, even better, open an issue or PR to suggest they're added by default!). The style can be changed using the QSS string found near the top of the program.

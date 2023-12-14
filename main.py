@@ -140,7 +140,7 @@ class MainWin(QtWidgets.QMainWindow):
         font_metrics = QtGui.QFontMetrics(self.input_line.font())
         doc = self.input_line.document()
         margins = self.input_line.contentsMargins()
-        row_height  = (font_metrics.lineSpacing() + 2) + 1 * rows + (doc.documentMargin() + self.input_line.frameWidth()) * 2 + margins.top() + margins.bottom()
+        row_height  = (font_metrics.lineSpacing() + 2) * rows + (doc.documentMargin() + self.input_line.frameWidth()) * 2 + margins.top() + margins.bottom()
         self.input_line.setFixedHeight(round(row_height))
 
     def run_code(self):
@@ -157,8 +157,8 @@ class MainWin(QtWidgets.QMainWindow):
     def onTextChange(self):
         ret = self.run_code()
         self.body_text.setText(ret)
-        size = self.resize_input()
-
+        
+        self.resize_input()
         font_metrics = QtGui.QFontMetrics(self.body_text.font())
         text_size = font_metrics.size(0, "a")
         self.setFixedSize(self.winwidth, max(self.winheight, int((len(ret) * text_size.width()) // self.winwidth * text_size.height() + self.layout.sizeHint().height())))
