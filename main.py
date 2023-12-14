@@ -148,8 +148,12 @@ class MainWin(QtWidgets.QMainWindow):
         try:
             smts = text.split("\n")
             # exec("\n".join([smt.strip() for smt in smts[:-1]]))
-            exec("\n".join(smts[:-1]))
-            ret = str(eval(smts[-1]))
+            globs = globals().copy()
+            locs = locals().copy()
+            exec("\n".join(smts[:-1]), globs, locs)
+            # weird hack to make list comprehensions work: make locals global
+            globs = {**locs, **globs}
+            ret = str(eval(smts[-1], globs))
         except Exception as e:
             ret = str(e)
         return ret
@@ -163,5 +167,6 @@ class MainWin(QtWidgets.QMainWindow):
         text_size = font_metrics.size(0, "a")
         self.setFixedSize(self.winwidth, max(self.winheight, int((len(ret) * text_size.width()) // self.winwidth * text_size.height() + self.layout.sizeHint().height())))
 
-w = MainWin()
-app.exec_()
+if __name__ == "__main__":
+    w = MainWin()
+    app.exec_()

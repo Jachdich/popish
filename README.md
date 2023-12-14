@@ -36,5 +36,5 @@ At the top of the file is defined a list of constants. Add any constants you fee
 - [ ] Show autocomplete options?
 - [ ] Add themes, built in and external
 - [ ] Make multi-line programs properly work
-- [ ] Figure out the weird bug with list comprehensions
+- [x] Figure out the weird bug with list comprehensions
 - [ ] Syntax highlighting
