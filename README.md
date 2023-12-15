@@ -40,3 +40,5 @@ At the top of the file is defined a list of constants. Add any constants you fee
 - [x] Figure out the weird bug with list comprehensions
 - [ ] Syntax highlighting
 - [ ] Custom library for mathematical functions - equation solving etc.
+- [ ] Fix not being able to overwrite constants e.g. c in code
+- [ ] When the expression is blank/nonexistant, return None rather than a syntax error
