@@ -21,15 +21,21 @@ Mearth = 6.0e24
 Mmoon = 7.3e22
 Rmoon = 1.7e6
 G = 6.67e-11
-c = 3e8
+c = 299_792_458.0
 Melectron = 9.11e-31
 Qelectron = -1.6e-19
 Mneutron = 1.675e-27
 Mproton = 1.673e-27
 h = 6.63e-19
+ħ = h/(2*pi)
 E0 = 8.85e-12
 U0 = 4*pi*10**-7
 Ke=1/(4*pi*E0)
+
+def cross(a, b):
+    return (a[1]*b[2]-a[2]*b[1],
+            a[2]*b[0]-a[0]*b[2],
+            a[0]*b[1]-a[1]*b[0])
 
 STYLE = """
 QWidget, QLineEdit, QPlainTextEdit QLabel {
