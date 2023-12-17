@@ -11,6 +11,8 @@ import random
 # import json
 # import os
 # import sys
+import time
+import json
 import pyperclip
 
 WIDTH = 50.0 # percent of the screen
@@ -103,42 +105,52 @@ class MainWin(QtWidgets.QMainWindow):
                 if self.input_line.textCursor().hasSelection():
                     text = self.input_line.textCursor().selectedText()
                 else:
-                    text = self.run_code()
+                    text, _ = self.run_code()
                 pyperclip.copy(text)
-                # subprocess.run(["xclip", "-selection", "clipboard"], input=text.encode("utf-8"))
             else:
                 QtWidgets.QPlainTextEdit.keyPressEvent(self.input_line, event)
-            
         
         self.input_line.keyPressEvent = keyPressEvent
         self.central.setLayout(self.layout)
 
         self.setStyleSheet(STYLE)
         self.setCentralWidget(self.central)
+
+        with open("/home/james/.config/popish/history.json", "r") as f:
+            self.history = json.loads(f.read())["history"]
         
+        # Calculating size and position for the window initially
         cursor_pos = QCursor.pos()
         screen = QtWidgets.QApplication.screenAt(cursor_pos)
         size = screen.size()
         geom = screen.geometry()
         sw, sh = size.width(), size.height()
-
-        winwidth = int(sw / 100 * WIDTH)
-        winheight = self.layout.sizeHint().height() + 2
-        self.winwidth = winwidth
-        self.winheight = winheight
-        self.setGeometry(int(sw / 2 - winwidth / 2) + geom.x(),
-                         int(sh / 2 - winheight / 2) + geom.y(),
-                         winwidth, winheight)
+        self.winwidth = int(sw / 100 * WIDTH)
+        self.winheight = self.layout.sizeHint().height() + 2
+        self.setGeometry(int(sw / 2 - self.winwidth / 2) + geom.x(),
+                         int(sh / 2 - self.winheight / 2) + geom.y(),
+                         self.winwidth, self.winheight)
         self.setWindowFlag(Qt.WindowType.Tool) 
-        self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
+
         self.input_line.setFocus()
         self.show()
+
+    def add_to_history(self, expression, result):
+        val = (expression,strip(), result, time.time())
+        for item in self.history:
+            if item[0] == val[0] and item[1] == val[1]:
+                return
+
+        self.history.append(val)
 
     def keyPressEvent(self, event: QtGui.QKeyEvent):
         if event.key() == Qt.Key_Escape:
             self.closeEvent(None)
         super().keyPressEvent(event)
+
     def closeEvent(self, event):
+        with open("/home/james/.config/popish/history.json", "w") as f:
+            f.write(json.dumps({"history": self.history}))
         QCoreApplication.quit()
 
     def resize_input(self):
@@ -160,13 +172,18 @@ class MainWin(QtWidgets.QMainWindow):
             # weird hack to make list comprehensions work: make locals global
             globs = {**locs, **globs}
             ret = str(eval(smts[-1], globs))
+            was_error = False
         except Exception as e:
             ret = str(e)
-        return ret
+            was_error = True
+        return ret, was_error
 
     def onTextChange(self):
-        ret = self.run_code()
+        ret, was_error = self.run_code()
         self.body_text.setText(ret)
+
+        if not was_error:
+            self.add_to_history(self.input_line.toPlainText(), ret)
         
         self.resize_input()
         font_metrics = QtGui.QFontMetrics(self.body_text.font())
