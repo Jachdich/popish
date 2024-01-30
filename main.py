@@ -23,15 +23,25 @@ Mearth = 6.0e24
 Mmoon = 7.3e22
 Rmoon = 1.7e6
 G = 6.67e-11
-c = 3e8
+c = 299_792_458.0
 Melectron = 9.11e-31
 Qelectron = -1.6e-19
 Mneutron = 1.675e-27
 Mproton = 1.673e-27
 h = 6.63e-19
+ħ = h/(2*pi)
 E0 = 8.85e-12
 U0 = 4*pi*10**-7
 Ke=1/(4*pi*E0)
+
+def cross(a, b):
+    return (a[1]*b[2]-a[2]*b[1],
+            a[2]*b[0]-a[0]*b[2],
+            a[0]*b[1]-a[1]*b[0])
+
+dot = lambda a, b: sum([e * f for e, f in zip(a, b)]) 
+mag = lambda v: sqrt(v[0]**2+v[1]**2+v[2]**2)
+norm = lambda v: (v[0]/mag(v), v[1]/mag(v), v[2]/mag(v))
 
 STYLE = """
 QWidget, QLineEdit, QPlainTextEdit QLabel {
@@ -102,11 +112,21 @@ class MainWin(QtWidgets.QMainWindow):
 
         def keyPressEvent(event):
             if event.key() == Qt.Key_C and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+                # copy
                 if self.input_line.textCursor().hasSelection():
-                    text = self.input_line.textCursor().selectedText()
+                    # if selected, copy selected text
+                    text = self.input_line.textCursor().selectedText().replace('\u2029', '\n')
                 else:
+                    # if not selected, copy the output
                     text, _ = self.run_code()
                 pyperclip.copy(text)
+            elif event.key() == Qt.Key_S and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+                # save
+                name, extension = QtWidgets.QFileDialog.getSaveFileName(filter="Python scripts (*.py)")
+                if not name.endswith(".py"):
+                    name += ".py"
+                with open(name, "w") as f:
+                    f.write(self.input_line.toPlainText())
             else:
                 QtWidgets.QPlainTextEdit.keyPressEvent(self.input_line, event)
         
@@ -136,7 +156,7 @@ class MainWin(QtWidgets.QMainWindow):
         self.show()
 
     def add_to_history(self, expression, result):
-        val = (expression,strip(), result, time.time())
+        val = (expression.strip(), result, time.time())
         for item in self.history:
             if item[0] == val[0] and item[1] == val[1]:
                 return

@@ -28,13 +28,17 @@ At the top of the file is defined a list of constants. Add any constants you fee
 
 - Ctrl-C (no text selected) - copy result to the clipboard
 - Ctrl-C (text selected) - copy selected text from the code to the clipboard
+- Ctrl-S - Save the script to a file
 - Esc - Quit
 
 ## TODO
 
-- [ ] Also save code to a file?
+- [x] Also save code to a file?
 - [ ] Show autocomplete options?
 - [ ] Add themes, built in and external
 - [ ] Make multi-line programs properly work
 - [x] Figure out the weird bug with list comprehensions
 - [ ] Syntax highlighting
+- [ ] Custom library for mathematical functions - equation solving etc.
+- [ ] Fix not being able to overwrite constants e.g. c in code
+- [ ] When the expression is blank/nonexistant, return None rather than a syntax error
